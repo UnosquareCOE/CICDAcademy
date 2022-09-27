@@ -28,6 +28,7 @@ To get some real world examples of CI/CD I've included some basic actions:
 
 - test-secret:
   This action demonstrates using a secret within an action. It also shows the level that Github will go to, to prevent secrets being printed.
+
   ```
-    
+
   ```
