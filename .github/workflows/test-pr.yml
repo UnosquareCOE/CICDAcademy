@@ -9,5 +9,15 @@ jobs:
   test-pr:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "🎉 The test PR Action."
-      # - run: exit 1
+      - name: Test
+        run: echo "🎉 The test PR Action."
+      - name: 🛎 Checkout
+        uses: actions/checkout@v2
+      # - name: Fail
+      #   run: exit 1
+      - name: Always do something
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: TestUpload
+          path: TestFile
