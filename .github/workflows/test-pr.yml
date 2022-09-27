@@ -10,4 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo "🎉 The test PR Action."
-      - run: exit 1
+      # - run: exit 1
