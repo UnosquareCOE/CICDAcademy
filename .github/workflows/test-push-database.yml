@@ -1,4 +1,4 @@
-name: Test Push Databse
+name: Test Push Database
 
 on:
   push:
