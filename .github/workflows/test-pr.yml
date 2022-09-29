@@ -1,23 +1,16 @@
-name: Test PR
+name: Test PR Database
 
 on:
   pull_request:
     branches:
       - main
+    paths:
+      - "database/**"
 
 jobs:
   test-pr:
     runs-on: ubuntu-latest
     steps:
-      - name: Test
-        run: echo "🎉 The test PR Action."
-      # - name: 🛎 Checkout
-      #   uses: actions/checkout@v2
-      # - name: Fail
-      #   run: exit 1
-      # - name: Always do something
-      #   uses: actions/upload-artifact@v3
-      #   if: always()
-      #   with:
-      #     name: TestUpload
-      #     path: Test
+      - uses: actions/checkout@v3
+      - name: execute flyway in docker 🐳
+        run: docker-compose up --abort-on-container-exit
