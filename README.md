@@ -37,6 +37,8 @@ on:
       - "api/**"
 ```
 
+This demonstrates how we can conditionally trigger based on the location of files changes. In this example only changes within the `api` directory will trigger this action. It is possible to specify many different `paths`.
+
 ### Defaults
 
 ```
@@ -44,6 +46,8 @@ defaults:
   run:
     working-directory: ./api
 ```
+
+It's possible with defaults to set both the `working-directory` and the `shell` used. This is handy for when the Action is only using a specific directory and saves having to set relative paths using the working directory target.
 
 ### Secrets
 
@@ -55,7 +59,7 @@ defaults:
   - run: "cat key"
 ```
 
-This action demonstrates using a secret within an action. It also shows the level that Github will go to, to prevent secrets being printed.
+This action demonstrates using a secret within an action. Secrets are stored within Settings > Secrets > Actions. It's possible to set secrets at a repository and organisation level (organisation for sharing between repositories).
 
 ### Act
 
@@ -69,4 +73,20 @@ It’s also common to emulate events based on you current branch with `act push|
 
 #### Development with docker
 
+Development with docker can bring many advantages; the main one being a highly predictable local development environment for a team. In this example below we can use profiles to set compose services that are only included for the dev profile:
+
 `docker compose --profile dev up`
+
+```
+  api:
+    profiles: ["dev"]
+    build:
+      context: ./api
+      dockerfile: dockerfile.local
+    volumes:
+      - ./api:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - flyway
+```
