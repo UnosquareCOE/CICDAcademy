@@ -28,16 +28,34 @@ This demonstrates execution on a push taking place. This is configured to only r
 
 This demonstrates execution on a pull request taking place. This is configured to only run when a pull request is created against the main branch.
 
-- test-secret:
-  This action demonstrates using a secret within an action. It also shows the level that Github will go to, to prevent secrets being printed.
+#### Path
 
-  ```
-    - run: 'echo "my secret is: $SSH_KEY" > key'
-      shell: bash
-      env:
-        SSH_KEY: ${{secrets.SSH_KEY}}
-    - run: "cat key"
-  ```
+```
+on:
+  [pull_request, push]:
+    paths:
+      - "api/**"
+```
+
+### Defaults
+
+```
+defaults:
+  run:
+    working-directory: ./api
+```
+
+### Secrets
+
+```
+  - run: 'echo "my secret is: $SSH_KEY" > key'
+    shell: bash
+    env:
+      SSH_KEY: ${{secrets.SSH_KEY}}
+  - run: "cat key"
+```
+
+This action demonstrates using a secret within an action. It also shows the level that Github will go to, to prevent secrets being printed.
 
 ### Act
 
