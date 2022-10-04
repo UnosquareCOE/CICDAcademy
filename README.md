@@ -4,27 +4,29 @@ This repository has been set up to accompany the working sessions to understand 
 
 ## Github Actions
 
-To get some real world examples of CI/CD I've included some basic actions:
+### Triggering actions execution
 
-- test-push:
-  This action demonstrates execution on a push taking place. This can be configured to only run on specific branches.
+#### Push
 
-  ```
-    on:
-      push:
-        branches:
-          - main
-  ```
+```
+  on:
+    push:
+      branches:
+        - main
+```
 
-- test-pr:
-  This action demonstrates execution on a pull request taking place. This can be configured to only run on PRs raised to specific branches.
+This demonstrates execution on a push taking place. This is configured to only run on the main branch.
 
-  ```
-    on:
-      pull_request:
-        branches:
-          - main
-  ```
+#### Pull Request
+
+```
+  on:
+    pull_request:
+      branches:
+        - main
+```
+
+This demonstrates execution on a pull request taking place. This is configured to only run when a pull request is created against the main branch.
 
 - test-secret:
   This action demonstrates using a secret within an action. It also shows the level that Github will go to, to prevent secrets being printed.

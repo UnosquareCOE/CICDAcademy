@@ -20,6 +20,7 @@ services:
     depends_on:
       - db
   api:
+    profiles: ["dev"]
     build:
       context: ./api
       dockerfile: dockerfile.local
