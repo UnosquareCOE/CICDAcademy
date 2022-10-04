@@ -9,7 +9,7 @@ function reverseString(input) {
     }
   }
 
-  return reversedString.join("1");
+  return reversedString.join("");
 }
 
 module.exports = {
