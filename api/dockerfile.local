@@ -9,4 +9,3 @@ RUN npm install -g nodemon
 ENTRYPOINT ["sh", "-c"]
 
 CMD ["npm install && npm start"]
-
