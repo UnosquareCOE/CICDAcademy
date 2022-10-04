@@ -64,3 +64,9 @@ Act is a great way to develop GitHub Actions locally before uploading and utiliz
 Typically however I will use `act -l push|pull_request` to determine which actions are available and then `act -j JobName` to execute specific jobs.
 
 It’s also common to emulate events based on you current branch with `act push|pull_request` and additionally use secrets with `-s SECRET_KEY=SECRET_VALUE`.
+
+### Docker
+
+#### Development with docker
+
+`docker compose --profile dev up`
