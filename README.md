@@ -4,38 +4,58 @@ This repository has been set up to accompany the working sessions to understand 
 
 ## Github Actions
 
-To get some real world examples of CI/CD I've included some basic actions:
+### Triggering actions execution
 
-- test-push:
-  This action demonstrates execution on a push taking place. This can be configured to only run on specific branches.
+#### Push
 
-  ```
-    on:
-      push:
-        branches:
-          - main
-  ```
+```
+  on:
+    push:
+      branches:
+        - main
+```
 
-- test-pr:
-  This action demonstrates execution on a pull request taking place. This can be configured to only run on PRs raised to specific branches.
+This demonstrates execution on a push taking place. This is configured to only run on the main branch.
 
-  ```
-    on:
-      pull_request:
-        branches:
-          - main
-  ```
+#### Pull Request
 
-- test-secret:
-  This action demonstrates using a secret within an action. It also shows the level that Github will go to, to prevent secrets being printed.
+```
+  on:
+    pull_request:
+      branches:
+        - main
+```
 
-  ```
-    - run: 'echo "my secret is: $SSH_KEY" > key'
-      shell: bash
-      env:
-        SSH_KEY: ${{secrets.SSH_KEY}}
-    - run: "cat key"
-  ```
+This demonstrates execution on a pull request taking place. This is configured to only run when a pull request is created against the main branch.
+
+#### Path
+
+```
+on:
+  [pull_request, push]:
+    paths:
+      - "api/**"
+```
+
+### Defaults
+
+```
+defaults:
+  run:
+    working-directory: ./api
+```
+
+### Secrets
+
+```
+  - run: 'echo "my secret is: $SSH_KEY" > key'
+    shell: bash
+    env:
+      SSH_KEY: ${{secrets.SSH_KEY}}
+  - run: "cat key"
+```
+
+This action demonstrates using a secret within an action. It also shows the level that Github will go to, to prevent secrets being printed.
 
 ### Act
 
@@ -44,3 +64,9 @@ Act is a great way to develop GitHub Actions locally before uploading and utiliz
 Typically however I will use `act -l push|pull_request` to determine which actions are available and then `act -j JobName` to execute specific jobs.
 
 It’s also common to emulate events based on you current branch with `act push|pull_request` and additionally use secrets with `-s SECRET_KEY=SECRET_VALUE`.
+
+### Docker
+
+#### Development with docker
+
+`docker compose --profile dev up`
