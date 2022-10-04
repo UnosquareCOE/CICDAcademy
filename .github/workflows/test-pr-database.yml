@@ -7,6 +7,10 @@ on:
     paths:
       - "database/**"
 
+defaults:
+  run:
+    working-directory: ./database
+
 jobs:
   test-pr:
     runs-on: ubuntu-latest
