@@ -19,5 +19,15 @@ services:
       - ./database:/flyway/sql
     depends_on:
       - db
+  api:
+    build:
+      context: ./api
+      dockerfile: dockerfile.local
+    volumes:
+      - ./api:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - flyway
 volumes:
   db:

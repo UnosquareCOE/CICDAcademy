@@ -1,0 +1,12 @@
+FROM node:14
+
+RUN apt-get update
+
+WORKDIR /app
+
+RUN npm install -g nodemon
+
+ENTRYPOINT ["sh", "-c"]
+
+CMD ["npm install && npm start"]
+
