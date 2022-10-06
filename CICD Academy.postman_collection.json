@@ -1,0 +1,55 @@
+{
+	"info": {
+		"_postman_id": "895bd87c-9471-4fb0-a583-ba5f90d6a4da",
+		"name": "CICD Academy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Test Request",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.variables.set(\"input\", \"Hello\")"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"verify response body\", () => {",
+							"  const responseText = pm.response.text();",
+							"  pm.expect(responseText).to.eql(\"olleH\");",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000?input={{input}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"query": [
+						{
+							"key": "input",
+							"value": "{{input}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -1,0 +1,31 @@
+name: Test PR API Postman
+
+on:
+  pull_request:
+    paths:
+      - "api/**"
+
+jobs:
+  test_execution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛎 Checkout
+        uses: actions/checkout@v2
+      - name: Install newman
+        run: |
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
+      - name: Start application
+        run: |
+          npm i --prefix ./api && (npm start --prefix ./api&)
+      - name: Make Directory for results
+        run: mkdir -p TestResults
+      - name: Run POSTMAN collection
+        run: |
+          newman run CICD\ Academy.postman_collection.json -r cli,htmlextra --reporter-htmlextra-export TestResults/htmlreport.html
+      - name: Output the run Details
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: ReportOutput
+          path: TestResults
