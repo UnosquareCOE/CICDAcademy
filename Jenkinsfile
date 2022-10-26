@@ -16,6 +16,7 @@ pipeline {
             steps {
                 echo "PR"
             }
+        }
         stage('Build') {
             steps {
                 echo 'Building..'
