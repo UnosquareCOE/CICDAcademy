@@ -13,6 +13,9 @@ pipeline {
                     changeRequest()
                 }
             }
+            steps {
+                echo "PR"
+            }
         stage('Build') {
             steps {
                 echo 'Building..'
