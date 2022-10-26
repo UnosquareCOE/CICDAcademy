@@ -7,6 +7,13 @@ pipeline {
     }
 
     stages {
+        stage('Pull Request') {
+            when {
+                anyOf {
+                    changeRequest()
+                    branch 'main'
+                }
+            }
         stage('Build') {
             steps {
                 echo 'Building..'
@@ -17,6 +24,8 @@ pipeline {
                 // }
             }
         }
+
+
         stage('Test') {
             steps {
                 echo 'Testing..'
