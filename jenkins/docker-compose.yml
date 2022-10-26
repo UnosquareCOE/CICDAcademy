@@ -17,9 +17,11 @@ services:
     privileged: true
     user: root
     container_name: agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     expose:
       - 22
     environment:
-      - JENKINS_AGENT_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDN3DG3B7k+FCPoDFam8PmJfYtXjMvJig3fSwT+W/A+4HAGDRdLPoigDkpnYVmrk01uyDHZg4eaPO7MAAEoWGQ4xBTHwhWoYYMnslDtOTmuHFvs19D2z+DZzXTrbTEgdRcnUEYzxzuL4KfAUpCZU1CsKdDCqhmiD5rAeOFQzx2zaShJ7Q7gNW70EnZQlNjyAJ4heJxIA1ZF9Lbcmj3L3ErCiiDeF0acvxzfwxXpNzhZsS+YyVbLFNetfCJn1cpA3tYGDbwlWvfnm5DWHp1noHgxcZH2T3k0/UpIAK6cLjixoP382z4nfzuGeFcfsBxhW7105OBbdz8QmoYEILBiHNpwVgdL2GLQ0k6RjqKTs85JEO6cgUyeVkQgz8r45mj4pQ4EWkwV+X2kUV++wyl3lyCu1tu+knY10dWdEnpm0ZUP1Cd/5m9KFqNxug+Ub6aUYkPHs2+jGNGcwz1HOTWdfBpD+CYcg+58c/nYFrLKu9mMMI5xQNJj0kuKuaBnOc9zS+U= MarkMac@BEL-MC-210622G.local
+      - JENKINS_AGENT_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDMM6lYdI8G4RSCTy53FJElUCehOsxBL/3c92+DNgMMSkcDzi+Jhd0x0es/5VawnIpVLIhV/c9y3E1petm86yOCxqvjUjEU8oFUw6eJ5TXpMaz7hfhmYWjyVNU66GZN4St4DodQjtRDpvb4f81O1s1jEWWT6bYO6gilFijwaJaNOxwtJsSngtIuT2VfZWbhqaYm9fyoMpfzZeVRf0UkgSUZ8r95T0/sAK9cj+ThafJaFci7xwsr2N9HlXIT/bXhxXHEaaYiIjkqYd3g2dFGQ5TRIIEQ5W6gNjSZuT75DPccbh8hg+o9FJ1axKyEy+w7Gc7gNDHcWA1eZJTSywKPAO99R3uyUWNBjH0utxB09RWpYbRMIYmX5kxgSbYrr+zg/uqO/caERyCrbWWnnGQdJNB+umo1xvig6zXISsLyz92IVzdwI08dYIclkA+N3B+Rdnk7OYJEsXOyoGJUJtB6cXGZwr7CrW4VUc6eRmdvHcQ3LS0+3ckCxrYqZuhOQxSZKSE= MarkMac@BEL-MC-210622G.local
 volumes:
   jenkins_config:
