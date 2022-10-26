@@ -11,8 +11,9 @@ pipeline {
             steps {
                 echo 'Building..'
                 dir('api') {
-                    sh "pwd"
-                    docker.build("test-api:${env.BUILD_ID}")
+                    script {
+                        docker.build("test-api:${env.BUILD_ID}")
+                    }
                 }
             }
         }
