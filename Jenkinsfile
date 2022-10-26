@@ -11,7 +11,6 @@ pipeline {
             when {
                 anyOf {
                     changeRequest()
-                    branch 'main'
                 }
             }
         stage('Build') {
