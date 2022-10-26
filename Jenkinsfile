@@ -28,7 +28,7 @@ pipeline {
 
                 sh '''
                     wget https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/7.8.2/flyway-commandline-7.8.2-linux-x64.tar.gz
-                    tar -xvf flyway-commandline-7.8.2-linux-x64.tar.gz && sudo ln -s `pwd`/flyway-7.8.2/flyway /usr/local/bin
+                    tar -xvf flyway-commandline-7.8.2-linux-x64.tar.gz && ln -s `pwd`/flyway-7.8.2/flyway /usr/local/bin
                     flyway --version
                 ''';
             }
