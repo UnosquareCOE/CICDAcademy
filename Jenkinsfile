@@ -1,20 +1,20 @@
 #!groovy?
  
 pipeline {
-    agent any
-    // agent {
-    //     docker { image 'node:18' }
-    // }
+    // agent any
+    agent {
+        docker { image 'node:18' }
+    }
 
     stages {
         stage('Build') {
             steps {
                 echo 'Building..'
-                dir('api') {
-                    script {
-                        docker.build("test-api:${env.BUILD_ID}")
-                    }
-                }
+                // dir('api') {
+                //     script {
+                //         docker.build("test-api:${env.BUILD_ID}")
+                //     }
+                // }
             }
         }
         stage('Test') {
