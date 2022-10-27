@@ -40,7 +40,9 @@ pipeline {
                 echo 'Deploy DB'
                 dir('api') {
                     script {
-                        docker.build("my-image:${env.BUILD_ID}")
+                        docker.image('flyway/flyway').withRun {c ->
+                            sh '-url=jdbc:postgresql://db/test -schemas=public -user=postgres -password=password -connectRetries=5 migrate'
+                        }
                     }
                 }
                 // apply database
