@@ -17,7 +17,6 @@ pipeline {
                 sh (script: 'docker-compose up --abort-on-container-exit')
             }
         }
-        stage
         stage('Build') {
             steps {
                 echo 'Building..'
