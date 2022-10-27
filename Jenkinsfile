@@ -81,7 +81,7 @@ pipeline {
         }
 
         stage('Deploy UI') {
-            when { branch 'main' }
+            when { branch 'origin/main' }
             agent {
                 docker { image 'node:16' }
             }
