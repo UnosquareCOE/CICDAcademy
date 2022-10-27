@@ -19,22 +19,30 @@ pipeline {
             steps {
                 dir('api') {
                     script {
-                        // check API tests
                         sh 'npm i && npm run test'
                     }
                 }
             }
         }
         stage('Pull Request Database') {
-            // when { changeRequest target: 'main' }
+            when { 
+                allOf {
+                    // changeRequest target: 'main' 
+                    changeset "database/*"
+                }
+            }
             steps {
-                // check database
                 sh (script: 'docker-compose up --abort-on-container-exit')
             }
         }
         stage('Deploy Database') {
             steps {
                 echo 'Deploy DB'
+                dir('api') {
+                    script {
+                        docker.build("my-image:${env.BUILD_ID}")
+                    }
+                }
                 // apply database
                 // docker.image('flyway/flyway').withRun {c ->
                 //     sh '-url=jdbc:postgresql://db/test -schemas=public -user=postgres -password=password -connectRetries=5 migrate'
