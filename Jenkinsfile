@@ -34,6 +34,7 @@ pipeline {
         }
         stage('Deploy Database') {
             steps {
+                echo 'Deploy DB'
                 // apply database
                 // docker.image('flyway/flyway').withRun {c ->
                 //     sh '-url=jdbc:postgresql://db/test -schemas=public -user=postgres -password=password -connectRetries=5 migrate'
