@@ -1,11 +1,7 @@
 #!groovy?
  
 pipeline {
-    // agent any
-    agent {
-        docker { image 'node:16' }
-    }
-
+    agent any
     stages {
         stage('Pull Request') {
             when {
