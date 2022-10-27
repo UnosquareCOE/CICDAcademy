@@ -81,12 +81,7 @@ pipeline {
         }
 
         stage('Deploy UI') {
-            when {  
-                allOf {
-                    branch 'main' 
-                    // changeset "ui/*"
-                }
-            }
+            when { branch 'main' }
             agent {
                 docker { image 'node:16' }
             }
