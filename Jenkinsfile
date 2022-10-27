@@ -46,11 +46,6 @@ pipeline {
                 }
             }
         }
-
-        //   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        //   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        //   aws-region: "eu-west-2"
-
         stage('Deploy API') {
             // when { changeset "api/*" }
             steps {
@@ -76,9 +71,19 @@ pipeline {
         }
 
         stage('Deploy UI') {
+            // when { changeset "api/*" }
+            agent {
+                docker { image 'node:16' }
+            }
             steps {
-                // apply UI S3
-                echo 'Deploy UI'
+                scripts {
+                    withAWS(region:'eu-west-1', credentials:'awsAccessCredentials') {
+                        sh '''                         
+                            npm i && npm run test
+                            aws s3 sync build s3://cicdacademybucket/
+                        ''';
+                    }
+                }
             }
         }
     }
