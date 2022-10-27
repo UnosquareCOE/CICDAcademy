@@ -41,7 +41,7 @@ pipeline {
                 dir('api') {
                     script {
                         docker.image('flyway/flyway').withRun {c ->
-                            sh '-url=jdbc:postgresql://db/test -schemas=public -user=postgres -password=password -connectRetries=5 migrate'
+                            sh 'flyway migrate -url=jdbc:postgresql://db/test -schemas=public -user=postgres -password=password -connectRetries=5'
                         }
                     }
                 }
