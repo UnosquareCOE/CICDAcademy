@@ -38,10 +38,6 @@ pipeline {
                 // docker.image('flyway/flyway').withRun {c ->
                 //     sh '-url=jdbc:postgresql://db/test -schemas=public -user=postgres -password=password -connectRetries=5 migrate'
                 // }
-
-                docker.image('mysql').withRun {c ->
-                    sh './test-with-local-db'
-                }
             }
         }
 
