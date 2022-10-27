@@ -97,8 +97,8 @@ pipeline {
                         withAWS(region:'eu-west-1', credentials:'awsAccessCredentials') {
                             sh '''                         
                                 npm i && npm run-script build
-                                aws s3 sync build s3://cicdacademybucket/
                             ''';
+                            s3Upload(file:'build', bucket:'cicdacademybucket', path:'')
                         }
                     }
                 }
