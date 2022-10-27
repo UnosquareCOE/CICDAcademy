@@ -61,10 +61,10 @@ pipeline {
                 ''';
                 dir('api') {
                     script {
-                        withAWS(region:'eu-west-1', credentials:'awsAccessCredentials') {
+                        withAWS(region:'eu-west-2', credentials:'awsAccessCredentials') {
                             sh '''
                                 docker build -t test-system-api:latest .
-                                aws lightsail push-container-image --region eu-west-2 --service-name cicd-service-1 --label test-system-api --image test-system-api:latest
+                                aws lightsail push-container-image --service-name cicd-service-1 --label test-system-api --image test-system-api:latest
                                 aws lightsail get-container-images --service-name cicd-service-1 | jq --raw-output ".containerImages[0].image" > image.txt
                                 jq --arg image $(cat image.txt) '.containers.app.image = $image' container.template.json > container.json
                                 aws lightsail create-container-service-deployment --service-name cicd-service-1 --cli-input-json file://$(pwd)/container.json
