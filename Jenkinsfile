@@ -37,22 +37,20 @@ pipeline {
                 docker.image('mysql').withRun {c ->
                     sh './test-with-local-db'
                 }
-
-                // apply api
-
-                // apply UI
             }
         }
 
         stage('Deploy API') {
             steps {
                 // apply api lightsail
+                echo 'Deploy API'
             }
         }
 
         stage('Deploy UI') {
             steps {
                 // apply UI S3
+                echo 'Deploy UI'
             }
         }
     }
