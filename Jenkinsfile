@@ -7,7 +7,12 @@ pipeline {
     }
     stages {
         stage ('Pull Request API') {
-            // when { changeRequest target: 'main' }
+            when { 
+                allOf {
+                    // changeRequest target: 'main' 
+                    changeset "api/*"
+                }
+            }
             agent {
                 docker { image 'node:16' }
             }
