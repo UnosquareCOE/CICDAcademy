@@ -2,10 +2,12 @@
  
 pipeline {
     agent any
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '2', artifactNumToKeepStr: '2'))
+    }
     stages {
         stage ('Pull Request API') {
             // when { changeRequest target: 'main' }
-            // when { changeRequest() }
             agent {
                 docker { image 'node:16' }
             }
@@ -19,24 +21,22 @@ pipeline {
             }
         }
         stage('Pull Request Database') {
-            // when {
-            //     anyOf {
-            //         changeRequest()
-            //     }
-            // }
+            // when { changeRequest target: 'main' }
             steps {
                 // check database
                 sh (script: 'docker-compose up --abort-on-container-exit')
             }
         }
-        stage('Build') {
+        stage('Deploy Database') {
             steps {
-                echo 'Building..'
-        
                 // apply database
                 // docker.image('flyway/flyway').withRun {c ->
                 //     sh '-url=jdbc:postgresql://db/test -schemas=public -user=postgres -password=password -connectRetries=5 migrate'
                 // }
+
+                docker.image('mysql').withRun {c ->
+                    sh './test-with-local-db'
+                }
 
                 // apply api
 
@@ -44,15 +44,15 @@ pipeline {
             }
         }
 
-
-        stage('Test') {
+        stage('Deploy API') {
             steps {
-                echo 'Testing..'
+                // apply api lightsail
             }
         }
-        stage('Deploy') {
+
+        stage('Deploy UI') {
             steps {
-                echo 'Deploying....'
+                // apply UI S3
             }
         }
     }
