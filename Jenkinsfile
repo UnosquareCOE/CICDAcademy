@@ -34,9 +34,9 @@ pipeline {
                 echo 'Building..'
         
                 // apply database
-                docker.image('flyway/flyway').withRun {c ->
-                    sh '-url=jdbc:postgresql://db/test -schemas=public -user=postgres -password=password -connectRetries=5 migrate'
-                }
+                // docker.image('flyway/flyway').withRun {c ->
+                //     sh '-url=jdbc:postgresql://db/test -schemas=public -user=postgres -password=password -connectRetries=5 migrate'
+                // }
 
                 // apply api
 
