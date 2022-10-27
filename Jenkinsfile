@@ -76,7 +76,7 @@ pipeline {
                 docker { image 'node:16' }
             }
             steps {
-                scripts {
+                script {
                     withAWS(region:'eu-west-1', credentials:'awsAccessCredentials') {
                         sh '''                         
                             npm i && npm run test
