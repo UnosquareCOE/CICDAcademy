@@ -38,9 +38,8 @@ pipeline {
         stage('Deploy Database') {
             steps {
                 script {
-                    docker.image('flyway/flyway').withRun('-v "${PWD}/database:/flyway/sql"', 
-                        '-url=jdbc:postgresql://db/test -schemas=public -user=postgres -password=password -connectRetries=5') { c ->
-                        sh "docker exec ${c.id} ls flyway"
+                    docker.image('flyway/flyway').withRun('-v "${PWD}/database:/flyway/sql"') { c ->
+                        sh "docker exec ${c.id} ls flyway -url=jdbc:postgresql://db/test -schemas=public -user=postgres -password=password -connectRetries=5"
                         sh "docker logs --follow ${c.id}"
                     }
                 }
