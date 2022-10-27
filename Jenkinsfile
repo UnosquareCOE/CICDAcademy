@@ -9,7 +9,7 @@ pipeline {
         stage('Pull Request Database') {
             when { 
                 allOf {
-                    // changeRequest target: 'main' 
+                    changeRequest target: 'main' 
                     changeset "database/*"
                 }
             }
@@ -20,7 +20,7 @@ pipeline {
         stage ('Pull Request API') {
             when { 
                 allOf {
-                    // changeRequest target: 'main' 
+                    changeRequest target: 'main' 
                     changeset "api/*"
                 }
             }
@@ -36,7 +36,12 @@ pipeline {
             }
         }
         stage('Deploy Database') {
-            when { changeset "database/*" }
+            when {  
+                allOf {
+                    branch 'main' 
+                    // changeset "database/*"
+                }
+             }
             steps {
                 script {
                     docker.image('flyway/flyway').withRun('-v "${PWD}/database:/flyway/sql"', '-url=jdbc:postgresql://db/test -schemas=public -user=postgres -password=password -connectRetries=5 migrate') { c ->
@@ -47,7 +52,12 @@ pipeline {
             }
         }
         stage('Deploy API') {
-            // when { changeset "api/*" }
+            when {  
+                allOf {
+                    branch 'main' 
+                    // changeset "api/*"
+                }
+            }
             steps {
                 sh '''
                     curl "https://s3.us-west-2.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl" -o "lightsailctl"
@@ -71,17 +81,24 @@ pipeline {
         }
 
         stage('Deploy UI') {
-            // when { changeset "api/*" }
+            when {  
+                allOf {
+                    branch 'main' 
+                    // changeset "ui/*"
+                }
+            }
             agent {
                 docker { image 'node:16' }
             }
             steps {
-                script {
-                    withAWS(region:'eu-west-1', credentials:'awsAccessCredentials') {
-                        sh '''                         
-                            npm i && npm run test
-                            aws s3 sync build s3://cicdacademybucket/
-                        ''';
+                dir('ui') {
+                    script {
+                        withAWS(region:'eu-west-1', credentials:'awsAccessCredentials') {
+                            sh '''                         
+                                npm i && npm run test
+                                aws s3 sync build s3://cicdacademybucket/
+                            ''';
+                        }
                     }
                 }
             }
