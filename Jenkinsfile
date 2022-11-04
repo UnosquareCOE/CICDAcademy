@@ -52,7 +52,9 @@ pipeline {
             }
             steps {
                 script {
-                    sh '''                         
+                    sh '''       
+                        mkdir flyway
+                        mkdir flyway/sql               
                         cp -R ./database ./flyway/sql
                         ls ./flyway/sql
                         flyway/flyway -url=jdbc:postgresql://${DB_URL}/cicdtestdb -schemas=public -user=${DB_USER} -password=${DB_PASSWORD} -connectRetries=5 migrate
