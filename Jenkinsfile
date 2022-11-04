@@ -51,7 +51,7 @@ pipeline {
                 script {
                     sh (script: 'ls ${PWD}/database')
 
-                    docker.image('flyway/flyway').withRun('-v "$WORKSPACE/database:/sql"', '-url=jdbc:postgresql://${DB_URL}/cicdtestdb -schemas=public -user=${DB_USER} -password=${DB_PASSWORD} -locations="filesystem:/sql" -connectRetries=5 migrate') { c ->
+                    docker.image('flyway/flyway').withRun('-v "$WORKSPACE/database:/sql"', '-url=jdbc:postgresql://${DB_URL}/cicdtestdb -schemas=public -user=${DB_USER} -password=${DB_PASSWORD} -locations=/flyway/sql -connectRetries=5 migrate') { c ->
                         sh "docker exec ${c.id} ls flyway"
                         sh "docker logs --follow ${c.id}"
                     }
