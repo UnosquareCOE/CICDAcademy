@@ -7,23 +7,23 @@ pipeline {
     }
     stages {
         stage('Pull Request Database') {
-            // when { 
-            //     allOf {
-            //         changeRequest target: 'main' 
-            //         changeset "database/*"
-            //     }
-            // }
+            when { 
+                allOf {
+                    changeRequest target: 'main' 
+                    changeset "database/*"
+                }
+            }
             steps {
                 sh (script: 'docker-compose up --abort-on-container-exit')
             }
         }
         stage ('Pull Request API') {
-            // when { 
-            //     allOf {
-            //         changeRequest target: 'main' 
-            //         changeset "api/*"
-            //     }
-            // }
+            when { 
+                allOf {
+                    changeRequest target: 'main' 
+                    changeset "api/*"
+                }
+            }
             agent {
                 docker { image 'node:16' }
             }
@@ -36,15 +36,20 @@ pipeline {
             }
         }
         stage('Deploy Database') {
-            // when {  
-            //     allOf {
-            //         branch 'main' 
+            when {  
+                allOf {
+                    branch 'main' 
                     // changeset "database/*"
-            //     }
-            //  }
+                }
+            }
+            environment {
+                DB_URL = credentials('dev-db-url')
+                DB_USER = credentials('dev-db-user')
+                DB_PASSWORD = credentials('dev-db-password')
+            }
             steps {
                 script {
-                    docker.image('flyway/flyway').withRun('-v "${PWD}/database:/flyway/sql"', '-url=jdbc:postgresql://db/test -schemas=public -user=postgres -password=password -connectRetries=5 migrate') { c ->
+                    docker.image('flyway/flyway').withRun('-v "${PWD}/database:/flyway/sql"', '-url=jdbc:postgresql://${DB_URL}/cicdtestdb -schemas=public -user=${DB_USER} -password=${DB_PASSWORD} -connectRetries=5 migrate') { c ->
                         sh "docker exec ${c.id} ls flyway"
                         sh "docker logs --follow ${c.id}"
                     }
@@ -52,12 +57,12 @@ pipeline {
             }
         }
         stage('Deploy API') {
-            // when {  
-            //     allOf {
-            //         branch 'main' 
-                    // changeset "api/*"
-            //     }
-            // }
+            when {  
+                allOf {
+                    branch 'main' 
+                    changeset "api/*"
+                }
+            }
             steps {
                 sh '''
                     curl "https://s3.us-west-2.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl" -o "lightsailctl"
@@ -81,13 +86,12 @@ pipeline {
         }
 
         stage('Deploy UI') {
-            // when {  
-            //     changeset "ui/*"
-            //     allOf {
-            //         branch 'main' 
-            //         branch 'dev'
-            //     }
-            // }
+            when {  
+                allOf {
+                    changeset "ui/*"
+                    branch 'main' 
+                }
+            }
             agent {
                 docker { image 'node:16' }
             }
