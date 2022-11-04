@@ -12,10 +12,12 @@ app.use(morgan("tiny"));
 app.get("/", (req, res) => {
   const { input } = req.query;
   res.send(stringUtils.reverseString(input ?? "Hello World 1234!"));
+
+
 });
-
-
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
+
+  
 });
