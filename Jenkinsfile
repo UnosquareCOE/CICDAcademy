@@ -42,6 +42,9 @@ pipeline {
                     // changeset "database/*"
                 }
             }
+            agent {
+                docker { image 'flyway/flyway' }
+            }
             environment {
                 DB_URL = credentials('dev-db-url')
                 DB_USER = credentials('dev-db-user')
@@ -49,15 +52,38 @@ pipeline {
             }
             steps {
                 script {
-                    sh (script: 'ls ${PWD}/database')
-
-                    docker.image('flyway/flyway').withRun('-v $WORKSPACE:/flyway/sql', '-url=jdbc:postgresql://${DB_URL}/cicdtestdb -schemas=public -user=${DB_USER} -password=${DB_PASSWORD} -connectRetries=5 migrate') { c ->
-                        sh "docker exec ${c.id} ls flyway"
-                        sh "docker logs --follow ${c.id}"
-                    }
+                    sh '''                         
+                        cp ./database ./flyway/sql
+                        flyway -url=jdbc:postgresql://${DB_URL}/cicdtestdb -schemas=public -user=${DB_USER} -password=${DB_PASSWORD} -connectRetries=5 migrate
+                    ''';
                 }
             }
         }
+
+
+        // stage('Deploy Database') {
+        //     when {  
+        //         allOf {
+        //             branch 'main' 
+        //             // changeset "database/*"
+        //         }
+        //     }
+        //     environment {
+        //         DB_URL = credentials('dev-db-url')
+        //         DB_USER = credentials('dev-db-user')
+        //         DB_PASSWORD = credentials('dev-db-password')
+        //     }
+        //     steps {
+        //         script {
+        //             sh (script: 'ls ${PWD}/database')
+
+        //             docker.image('flyway/flyway').withRun('-v $WORKSPACE:/flyway/sql', '-url=jdbc:postgresql://${DB_URL}/cicdtestdb -schemas=public -user=${DB_USER} -password=${DB_PASSWORD} -connectRetries=5 migrate') { c ->
+        //                 sh "docker exec ${c.id} ls flyway"
+        //                 sh "docker logs --follow ${c.id}"
+        //             }
+        //         }
+        //     }
+        // }
         stage('Deploy API') {
             when {  
                 allOf {
