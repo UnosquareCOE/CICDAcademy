@@ -43,7 +43,10 @@ pipeline {
                 }
             }
             agent {
-                docker { image 'flyway/flyway' }
+                docker { 
+                    image 'flyway/flyway'
+                    args '--entrypoint=' 
+                }
             }
             environment {
                 DB_URL = credentials('dev-db-url')
