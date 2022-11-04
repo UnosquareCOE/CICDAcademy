@@ -53,7 +53,7 @@ pipeline {
             steps {
                 script {
                     sh '''       
-                        flyway/flyway -url=jdbc:postgresql://${DB_URL}/cicdtestdb -schemas=public -user=${DB_USER} -password=${DB_PASSWORD} -locations="filesystem:./database" -connectRetries=5 migrate
+                        flyway -url=jdbc:postgresql://${DB_URL}/cicdtestdb -schemas=public -user=${DB_USER} -password=${DB_PASSWORD} -locations="filesystem:./database" -connectRetries=5 migrate
                     ''';
                 }
             }
