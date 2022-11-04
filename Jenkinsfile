@@ -54,7 +54,8 @@ pipeline {
                 script {
                     sh '''                         
                         cp -R ./database ./flyway/sql
-                        flyway -url=jdbc:postgresql://${DB_URL}/cicdtestdb -schemas=public -user=${DB_USER} -password=${DB_PASSWORD} -connectRetries=5 migrate
+                        ls ./flyway/sql
+                        flyway/flyway -url=jdbc:postgresql://${DB_URL}/cicdtestdb -schemas=public -user=${DB_USER} -password=${DB_PASSWORD} -connectRetries=5 migrate
                     ''';
                 }
             }
