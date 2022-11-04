@@ -39,12 +39,17 @@ pipeline {
             when {  
                 allOf {
                     branch 'main' 
-                    changeset "database/*"
+                    // changeset "database/*"
                 }
-             }
+            }
+            environment {
+                DB_URL = credentials('dev-db-url')
+                DB_USER = credentials('dev-db-user')
+                DB_PASSWORD = credentials('dev-db-password')
+            }
             steps {
                 script {
-                    docker.image('flyway/flyway').withRun('-v "${PWD}/database:/flyway/sql"', '-url=jdbc:postgresql://db/test -schemas=public -user=postgres -password=password -connectRetries=5 migrate') { c ->
+                    docker.image('flyway/flyway').withRun('-v "${PWD}/database:/flyway/sql"', '-url=jdbc:postgresql://${DB_URL}/cicdtestdb -schemas=public -user=${DB_USER} -password=${DB_PASSWORD} -connectRetries=5 migrate') { c ->
                         sh "docker exec ${c.id} ls flyway"
                         sh "docker logs --follow ${c.id}"
                     }
