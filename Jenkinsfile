@@ -47,7 +47,7 @@ pipeline {
                     changeset "database/*"
                 }
             }
-            agent {,
+            agent {
                 docker { 
                     image 'flyway/flyway'
                     args '--entrypoint=' 
