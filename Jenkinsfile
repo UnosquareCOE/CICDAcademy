@@ -6,6 +6,11 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '2', artifactNumToKeepStr: '2'))
     }
     stages {
+        stage('Say Something') {
+            steps {
+                saySomething 'Mark'
+            }
+        }
         stage('Pull Request Database') {
             when { 
                 allOf {
