@@ -6,6 +6,11 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '2', artifactNumToKeepStr: '2'))
     }
     stages {
+        stage('Do Common Stuff') {
+            steps {
+                test 'Mark'
+            }
+        }
         stage('Pull Request Database') {
             when { 
                 allOf {
@@ -42,7 +47,7 @@ pipeline {
                     changeset "database/*"
                 }
             }
-            agent {
+            agent {,
                 docker { 
                     image 'flyway/flyway'
                     args '--entrypoint=' 
