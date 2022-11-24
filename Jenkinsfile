@@ -6,10 +6,14 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '2', artifactNumToKeepStr: '2'))
     }
     stages {
-        stage('Say Something') {
+        stage('Approve deploy?') {
             steps {
                 requestApproval(environment: 'DEV', time: 1, unit: 'MINUTES')
-                saySomething 'Mark'
+            }
+        }
+        stage('Start other pipeline') {
+            if ($JOB_NAME != "test-project") {
+                build job: "test-project"
             }
         }
         stage('Parallel example') {
