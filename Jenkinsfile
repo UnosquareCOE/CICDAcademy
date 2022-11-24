@@ -6,14 +6,14 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '2', artifactNumToKeepStr: '2'))
     }
     stages {
+        stage('Say Something') {
+            steps {
+                requestApproval(environment: 'DEV', time: 1, unit: 'MINUTES')
+                saySomething 'Mark'
+            }
+        }
         stage('Parallel example') {
             parallel {
-                stage('Say Something') {
-                    steps {
-                        requestApproval(environment: 'DEV', time: 1, unit: 'DAYS')
-                        saySomething 'Mark'
-                    }
-                }
                 stage('Pull Request Database') {
                     when { 
                         allOf {
