@@ -14,7 +14,7 @@ pipeline {
         stage('Start other pipeline') {
             steps {
                 script {
-                    if ($JOB_NAME != "test-project") {
+                    if (env.JOB_BASE_NAME != "test-project") {
                         build job: "test-project"
                     }
                 }   
