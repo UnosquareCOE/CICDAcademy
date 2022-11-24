@@ -10,6 +10,7 @@ pipeline {
             parallel {
                 stage('Say Something') {
                     steps {
+                        requestApproval(environment: 'DEV', time: 1, unit: 'DAYS')
                         saySomething 'Mark'
                     }
                 }
