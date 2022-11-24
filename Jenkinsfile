@@ -6,36 +6,40 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '2', artifactNumToKeepStr: '2'))
     }
     stages {
-        stage('Say Something') {
-            steps {
-                saySomething 'Mark'
-            }
-        }
-        stage('Pull Request Database') {
-            when { 
-                allOf {
-                    changeRequest target: 'main' 
-                    changeset "database/*"
+        stage('Parallel example') {
+            parallel {
+                stage('Say Something') {
+                    steps {
+                        saySomething 'Mark'
+                    }
                 }
-            }
-            steps {
-                sh (script: 'docker-compose up --abort-on-container-exit')
-            }
-        }
-        stage ('Pull Request API') {
-            when { 
-                allOf {
-                    changeRequest target: 'main' 
-                    changeset "api/*"
+                stage('Pull Request Database') {
+                    when { 
+                        allOf {
+                            changeRequest target: 'main' 
+                            changeset "database/*"
+                        }
+                    }
+                    steps {
+                        sh (script: 'docker-compose up --abort-on-container-exit')
+                    }
                 }
-            }
-            agent {
-                docker { image 'node:16' }
-            }
-            steps {
-                dir('api') {
-                    script {
-                        sh 'npm i && npm run test'
+                stage ('Pull Request API') {
+                    when { 
+                        allOf {
+                            changeRequest target: 'main' 
+                            changeset "api/*"
+                        }
+                    }
+                    agent {
+                        docker { image 'node:16' }
+                    }
+                    steps {
+                        dir('api') {
+                            script {
+                                sh 'npm i && npm run test'
+                            }
+                        }
                     }
                 }
             }
