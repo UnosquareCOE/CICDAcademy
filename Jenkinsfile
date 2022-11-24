@@ -13,9 +13,11 @@ pipeline {
         }
         stage('Start other pipeline') {
             steps {
-                if ($JOB_NAME != "test-project") {
-                    build job: "test-project"
-                }
+                script {
+                    if ($JOB_NAME != "test-project") {
+                        build job: "test-project"
+                    }
+                }   
             }
         }
         stage('Parallel example') {
