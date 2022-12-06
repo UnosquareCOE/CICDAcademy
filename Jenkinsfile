@@ -6,20 +6,23 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '2', artifactNumToKeepStr: '2'))
     }
     stages {
-        stage('Approve deploy?') {
-            steps {
-                requestApproval(environment: 'DEV', time: 1, unit: 'MINUTES')
-            }
-        }
-        stage('Start other pipeline') {
-            steps {
-                script {
-                    if (env.JOB_BASE_NAME != "test-project") {
-                        build job: "test-project"
-                    }
-                }   
-            }
-        }
+        // stage('Approve deploy?') {
+        //     steps {
+        //         saySomething "ello"
+        //         requestApproval(environment: 'DEV', time: 1, unit: 'DAYS')
+        //     }
+        // }
+        // stage('Start other pipeline') {
+        //     steps {
+        //         script {
+        //             if (env.JOB_BASE_NAME != "test-project") {
+        //                 // we can also add wait: false if we want to do asynchronously
+        //                 // additionally we can get the result if needed for SUCCESS or FAILED
+        //                 build job: "test-project"
+        //             }
+        //         }   
+        //     }
+        // }
         stage('Parallel example') {
             parallel {
                 stage('Pull Request Database') {

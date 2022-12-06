@@ -1,0 +1,239 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  VpcId:
+    Type: "AWS::EC2::VPC::Id"
+    Description: The VPC ID
+    Default: vpc-273bcb41
+  SubnetIds:
+    Type: "List<AWS::EC2::Subnet::Id>"
+    Description: The subnet ID
+    Default: "subnet-03f3124b,subnet-cc8ad497,subnet-00475a67"
+  Environment:
+    Type: String
+    Description: The targetted Environment
+    Default: "develop"
+  EcsServiceName:
+    Type: String
+    Description: The name for the service
+    Default: Coe-Jenkins
+  EcsServicePort:
+    Type: Number
+    Description: The port the application listens on
+    Default: 8080
+  EcsStackName:
+    Type: String
+    Description: The Cloudformation Stack for the ECS
+    Default: "COE-Infrastructure-develop"
+  DesiredCount:
+    Type: String
+    Description: The number of containers to run
+    Default: 1
+  Priority:
+    Type: Number
+    Description: The priority of the listener rule
+    Default: 2
+  HealthCheckPath:
+    Type: String
+    Description: The path to use for health checks
+    Default: /jenkins/login
+  UrlPath:
+    Type: String
+    Description: The path to use for path based routing
+    Default: /jenkins/*
+  JenkinsDockerImage:
+    Type: String
+    Default: jenkins/jenkins:lts
+    AllowedPattern: '^.+$'
+    Description: Docker image used in the ECS task definition. Override the default to use a custom image (mandatory).
+Resources:
+  EcsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "COE-${Environment}-${EcsServiceName}-Task-Role"
+      RetentionInDays: 7
+  EcsTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: jenkins-role
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - elasticfilesystem:ClientMount
+                  - elasticfilesystem:ClientWrite
+                Resource: !Sub arn:aws:elasticfilesystem:${AWS::Region}:${AWS::AccountId}:file-system/${FileSystemResource}
+  EcsExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "COE-${Environment}-${EcsServiceName}-Task-Execution-Role"
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"  
+  EcsTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "COE-${Environment}-${EcsServiceName}-Task-Definition"
+      Cpu: 512
+      Memory: 1024
+      NetworkMode: awsvpc
+      TaskRoleArn: !Ref EcsTaskRole
+      ExecutionRoleArn: !GetAtt EcsExecutionRole.Arn
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: !Ref EcsServiceName
+          Image: !Ref JenkinsDockerImage
+          PortMappings:
+            - ContainerPort: 8080
+          Environment:
+            - Name: "JENKINS_OPTS"
+              Value: "--prefix=/jenkins"
+          MountPoints:
+            - SourceVolume: jenkins-home
+              ContainerPath: /var/jenkins_home
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref EcsLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: jenkins
+      Volumes:
+        - Name: jenkins-home
+          EFSVolumeConfiguration:
+            FilesystemId: !Ref FileSystemResource
+            TransitEncryption: ENABLED
+            AuthorizationConfig:
+              AccessPointId: !Ref AccessPointResource
+              IAM: ENABLED   
+  EcsService:
+    Type: "AWS::ECS::Service"
+    Properties:
+      Cluster:
+        Fn::ImportValue: !Sub "${EcsStackName}-EcsClusterName"
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+      DesiredCount: !Ref DesiredCount
+      HealthCheckGracePeriodSeconds: 30
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: !Ref SubnetIds
+          SecurityGroups:
+            - !Ref EcsContainerSecurityGroup
+      LoadBalancers:
+        - ContainerName: !Ref EcsServiceName
+          ContainerPort: !Ref EcsServicePort
+          TargetGroupArn: !Ref TargetGroup
+      ServiceName: !Ref EcsServiceName
+      TaskDefinition: !Ref EcsTaskDefinition
+  EcsAlbListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+      Conditions:
+        - Field: path-pattern
+          Values: [!Ref UrlPath]
+      ListenerArn:
+        Fn::ImportValue: !Sub "${EcsStackName}-HttpsAlbListenerArn"
+      Priority: !Ref Priority
+  EcsContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub "COE-${Environment}-SG-${EcsServiceName}"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref EcsServicePort
+          ToPort: !Ref EcsServicePort
+          CidrIp: 0.0.0.0/0
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name:
+        "Fn::Join":
+          - ""
+          - - Fn::ImportValue: !Sub "${EcsStackName}-EcsClusterName"
+            - !Sub "-INT-${EcsServiceName}"
+      Port: 1
+      Protocol: HTTP
+      VpcId: !Ref VpcId
+      HealthCheckIntervalSeconds: 60
+      HealthCheckPath: !Ref HealthCheckPath
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 30
+      HealthyThresholdCount: 2
+      TargetType: ip
+      UnhealthyThresholdCount: 5
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: "10"
+  EFSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupDescription: Enable EFS access via port 2049
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          SourceSecurityGroupId: !Ref EcsContainerSecurityGroup
+  FileSystemResource:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: true
+      FileSystemTags:
+        - Key: Name
+          Value: jenkins-home
+  MountTargetResource1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystemResource
+      SubnetId: subnet-03f3124b
+      SecurityGroups:
+        - !GetAtt EFSSecurityGroup.GroupId
+  MountTargetResource2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystemResource
+      SubnetId: subnet-cc8ad497
+      SecurityGroups:
+        - !GetAtt EFSSecurityGroup.GroupId
+  MountTargetResource3:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystemResource
+      SubnetId: subnet-00475a67
+      SecurityGroups:
+        - !GetAtt EFSSecurityGroup.GroupId
+  AccessPointResource:
+    Type: AWS::EFS::AccessPoint
+    Properties:
+      FileSystemId: !Ref FileSystemResource
+      PosixUser:
+        Uid: '1000'
+        Gid: '1000'
+      RootDirectory:
+        CreationInfo:
+          OwnerGid: '1000'
+          OwnerUid: '1000'
+          Permissions: '755'
+        Path: '/jenkins-home'
