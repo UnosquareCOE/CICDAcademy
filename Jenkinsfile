@@ -6,6 +6,16 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '2', artifactNumToKeepStr: '2'))
     }
     stages {
+       stage('Hi there') {
+            steps {
+                echo "Hello There!"
+            }
+        }
+
+
+        
+
+
         // stage('Approve deploy?') {
         //     steps {
         //         saySomething "ello"
@@ -23,65 +33,65 @@ pipeline {
         //         }   
         //     }
         // }
-        stage('Parallel example') {
-            parallel {
-                stage('Pull Request Database') {
-                    when { 
-                        allOf {
-                            changeRequest target: 'main' 
-                            changeset "database/*"
-                        }
-                    }
-                    steps {
-                        sh (script: 'docker-compose up --abort-on-container-exit')
-                    }
-                }
-                stage ('Pull Request API') {
-                    when { 
-                        allOf {
-                            changeRequest target: 'main' 
-                            changeset "api/*"
-                        }
-                    }
-                    agent {
-                        docker { image 'node:16' }
-                    }
-                    steps {
-                        dir('api') {
-                            script {
-                                sh 'npm i && npm run test'
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        stage('Deploy Database') {
-            when {  
-                allOf {
-                    branch 'main' 
-                    changeset "database/*"
-                }
-            }
-            agent {
-                docker { 
-                    image 'flyway/flyway'
-                    args '--entrypoint=' 
-                }
-            }
-            environment {
-                DB_URL = credentials('dev-db-url')
-                DB_USER = credentials('dev-db-user')
-                DB_PASSWORD = credentials('dev-db-password')
-            }
-            steps {
-                script {
-                    sh '''       
-                        flyway -url=jdbc:postgresql://${DB_URL}/cicdtestdb -schemas=public -user=${DB_USER} -password=${DB_PASSWORD} -locations="filesystem:./database" -connectRetries=5 migrate
-                    ''';
-                }
-            }
-        }
+        // stage('Parallel example') {
+        //     parallel {
+        //         stage('Pull Request Database') {
+        //             when { 
+        //                 allOf {
+        //                     changeRequest target: 'main' 
+        //                     changeset "database/*"
+        //                 }
+        //             }
+        //             steps {
+        //                 sh (script: 'docker-compose up --abort-on-container-exit')
+        //             }
+        //         }
+        //         stage ('Pull Request API') {
+        //             when { 
+        //                 allOf {
+        //                     changeRequest target: 'main' 
+        //                     changeset "api/*"
+        //                 }
+        //             }
+        //             agent {
+        //                 docker { image 'node:16' }
+        //             }
+        //             steps {
+        //                 dir('api') {
+        //                     script {
+        //                         sh 'npm i && npm run test'
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        // stage('Deploy Database') {
+        //     when {  
+        //         allOf {
+        //             branch 'main' 
+        //             changeset "database/*"
+        //         }
+        //     }
+        //     agent {
+        //         docker { 
+        //             image 'flyway/flyway'
+        //             args '--entrypoint=' 
+        //         }
+        //     }
+        //     environment {
+        //         DB_URL = credentials('dev-db-url')
+        //         DB_USER = credentials('dev-db-user')
+        //         DB_PASSWORD = credentials('dev-db-password')
+        //     }
+        //     steps {
+        //         script {
+        //             sh '''       
+        //                 flyway -url=jdbc:postgresql://${DB_URL}/cicdtestdb -schemas=public -user=${DB_USER} -password=${DB_PASSWORD} -locations="filesystem:./database" -connectRetries=5 migrate
+        //             ''';
+        //         }
+        //     }
+        // }
         stage('Deploy API') {
             when {  
                 allOf {
@@ -111,28 +121,28 @@ pipeline {
             }
         }
 
-        stage('Deploy UI') {
-            when {  
-                allOf {
-                    changeset "ui/*"
-                    branch 'main' 
-                }
-            }
-            agent {
-                docker { image 'node:16' }
-            }
-            steps {
-                dir('ui') {
-                    script {
-                        withAWS(region:'eu-west-1', credentials:'awsAccessCredentials') {
-                            sh '''                         
-                                npm i && npm run-script build
-                            ''';
-                            s3Upload(file:'build', bucket:'cicdacademybucket', path:'')
-                        }
-                    }
-                }
-            }
-        }
+        // stage('Deploy UI') {
+        //     when {  
+        //         allOf {
+        //             changeset "ui/*"
+        //             branch 'main' 
+        //         }
+        //     }
+        //     agent {
+        //         docker { image 'node:16' }
+        //     }
+        //     steps {
+        //         dir('ui') {
+        //             script {
+        //                 withAWS(region:'eu-west-1', credentials:'awsAccessCredentials') {
+        //                     sh '''                         
+        //                         npm i && npm run-script build
+        //                     ''';
+        //                     s3Upload(file:'build', bucket:'cicdacademybucket', path:'')
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
     }
 }
