@@ -111,8 +111,6 @@ pipeline {
             }
         }
 
-
-
         // stage('Deploy UI') {
         //     when {  
         //         allOf {
