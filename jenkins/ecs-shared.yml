@@ -1,0 +1,161 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  ClusterName:
+    Type: String
+    Description: Name of the ECS cluster to create
+    Default: "Jenkins-Develop"
+  VpcId:
+    Type: "AWS::EC2::VPC::Id"
+    Description: The VPC ID
+    Default: vpc-273bcb41
+  EcsAmi:
+    Description: AMI ID
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ecs/optimized-ami/amazon-linux/recommended/image_id
+  SubnetIds:
+    Type: "List<AWS::EC2::Subnet::Id>"
+    Description: The subnet ID
+    Default: "subnet-03f3124b,subnet-cc8ad497,subnet-00475a67"
+  Environment:
+    Type: String
+    Description: The targetted Environment
+    Default: "Develop"
+  CertificateArn:
+    Description: The ARN of the HTTPS certificate
+    Type: String
+    Default: arn:aws:acm:eu-west-1:151477789193:certificate/a71b78e5-1c53-4436-b641-b0c4f53bb8f3
+Resources:
+  LaunchConfiguration:
+    Type: 'AWS::AutoScaling::LaunchConfiguration'
+    Properties:
+      ImageId: !Ref EcsAmi
+      InstanceType: t3.small
+      EbsOptimized: true
+      AssociatePublicIpAddress: false
+      UserData:
+        'Fn::Base64':
+          'Fn::Join':
+            - ''
+            - - "#!/bin/bash\n"
+              - "echo ECS_CLUSTER="
+              - Ref: EcsCluster
+              - " >> /etc/ecs/ecs.config\n"
+              - "echo ECS_LOGLEVEL=warn >> /etc/ecs/ecs.config\n"
+              - "yum install -y aws-cfn-bootstrap\n"
+              - "/opt/aws/bin/cfn-init"
+              - "         --stack "
+              - Ref: AWS::StackName
+              - " "
+              - "         --resource LaunchConfiguration "
+              - "         --configsets Install "
+              - "         --region "
+              - Ref: AWS::Region
+              - "\n"
+              - "PATH=$PATH:/usr/local/bin\n"
+              - "yum update\n"
+              - "\n"
+              - "service docker restart\n"
+              - "/opt/aws/bin/cfn-signal -e $? "
+              - "         --stack "
+              - Ref: AWS::StackName
+              - "         --resource AutoScalingGroup "
+              - "         --region "
+              - Ref: AWS::Region
+  AutoScalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      VPCZoneIdentifier: !Ref SubnetIds
+      LaunchConfigurationName: !Ref LaunchConfiguration
+      MinSize: 1
+      MaxSize: 1
+      DesiredCapacity: 1
+  EcsCluster:
+    Type: "AWS::ECS::Cluster"
+    Properties:
+      ClusterName: !Ref ClusterName
+  EcsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${ClusterName}-SG-ALB-EXT"
+      GroupDescription: Allow users to connect to COE APIs
+      VpcId:
+        Ref: VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+  EcsAlb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub "${ClusterName}-ALB-EXT"
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: "1800"
+      Subnets: !Ref SubnetIds
+      SecurityGroups:
+        - !Ref EcsSecurityGroup
+  EcsAlbHttpsListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref EcsTargetGroup
+      LoadBalancerArn: !Ref EcsAlb
+      Port: 443
+      Protocol: HTTPS
+      SslPolicy: ELBSecurityPolicy-2015-05
+      Certificates:
+        - CertificateArn: !Ref CertificateArn
+  EcsAlbHttpRedirectListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - RedirectConfig:
+            Host: "#{host}"
+            Path: "/#{path}"
+            Port: 443
+            Protocol: "HTTPS"
+            Query: "#{query}"
+            StatusCode: HTTP_301
+          Type: redirect
+      LoadBalancerArn: !Ref EcsAlb
+      Port: 80
+      Protocol: HTTP
+  EcsTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${ClusterName}-TG-EXT"
+      Port: 1
+      Protocol: HTTPS
+      VpcId: !Ref VpcId
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /ping
+      HealthCheckProtocol: HTTPS
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 2
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: "5"
+Outputs:
+  EcsClusterName:
+    Description: The name of the ECS cluster
+    Value: !Ref EcsCluster
+    Export:
+      Name: !Sub "${AWS::StackName}-EcsClusterName"
+  HttpsAlbListenerArn:
+    Description: The ARN of the HTTPS ALB listener
+    Value: !Ref EcsAlbHttpsListener
+    Export:
+      Name: !Sub "${AWS::StackName}-HttpsAlbListenerArn"
+  EcsSecurityGroupArn:
+    Description: The Arn of the ECS Security Group
+    Value: !Ref EcsSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-EcsSecurityGroupArn"
