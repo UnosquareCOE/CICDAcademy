@@ -6,6 +6,13 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '2', artifactNumToKeepStr: '2'))
     }
     stages {
+       stage('Hi there') {
+            steps {
+                echo "Hello There!"
+            }
+        }
+
+
         // stage('Approve deploy?') {
         //     steps {
         //         saySomething "ello"
